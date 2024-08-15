@@ -1,0 +1,5 @@
+mavenPerformancePipeline {
+    perfTestUrl = 'http://bip-reference-person-sbx.blue-sbx:8080'
+    perfOpts = '-DjMeterTestFile=ReferencePersonServicePerformanceTestPlan.jmx'
+    useJDK11 = true
+}

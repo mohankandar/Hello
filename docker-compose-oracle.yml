@@ -1,0 +1,145 @@
+version: "3.3"
+
+services:
+  
+  # Fill this out once the dev team has their app code into the repo
+  bip-reference-person:
+    image: bipdev/bip-reference-person
+    build:
+      context: ./bip-reference-person
+      dockerfile: Dockerfile.local
+    environment:
+      - spring.profiles.active=local-int
+      - spring.profiles.include=remote_client_sims, db-persondocs, db-oracle-personinfo
+      - spring.cloud.consul.host=consul
+      - spring.redis.host=redis
+      - spring.cloud.vault.host=vault
+      - spring.cloud.consul.enabled=true
+      - spring.cloud.consul.config.enabled=true
+      - spring.cloud.consul.config.failFast=true
+      - spring.cloud.consul.discovery.enabled=true
+      - spring.cloud.consul.discovery.register=true
+      - spring.cloud.vault.enabled=true
+      - spring.cloud.vault.consul.enabled=true
+      - bip.framework.security.jwt.enabled=true
+      - bip.framework.security.jwt.excludeUrls=/api/v1/token,/*
+      - bip.framework.security.opa.enabled=true
+      - bip.framework.security.opa.urls=http://opa:8181/v1/data/bip/reference/person/http/authz/admin,http://opa:8181/v1/data/bip/reference/person/http/authz/allow
+      - spring.cloud.vault.kv.application-name=blue/bip-reference-person,blue/bip-reference-person/example-service
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n #Remote Debugging
+    ports:
+      - "8080:8080"
+      - "8000:8000" #Remote Debugging
+    networks:
+      - bip
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: ["./wait-for-it.sh","oracle:5500","--timeout=0","--strict", "--","java","-Djava.security.egd=file:/dev/./urandom","-jar","/bip-reference-person.jar"]
+    depends_on:
+      - consul
+      - redis
+      - vault
+      - vault-config
+      #- oracle
+
+  consul:
+    image: bipdev/consul:1.4.3
+    build:
+      context: ./local-dev/consul
+    environment:
+      - MASTER_ACL_TOKEN=7652ba4c-0f6e-8e75-5724-5e083d72cfe4
+    ports:
+      - "8500:8500"
+    networks:
+      - bip
+
+  vault:
+    image: vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=${VAULT_TOKEN:-vaultroot}
+    networks:
+      - bip
+
+  vault-config:
+    image: bipdev/vault-config
+    build:
+      context: ./local-dev/vault-config
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_DEV_ROOT_TOKEN_ID=${VAULT_TOKEN:-vaultroot}
+      - CONSUL_HTTP_ADDR=http://consul:8500
+      - CONSUL_HTTP_TOKEN=7652ba4c-0f6e-8e75-5724-5e083d72cfe4
+    networks:
+      - bip
+    depends_on:
+      - consul
+      - vault
+
+  redis:
+    image: redis
+    networks:
+      - bip
+
+  prometheus:
+    image:  prom/prometheus:v2.5.0
+    ports:
+      - "9090:9090"
+    volumes: 
+      - "./local-dev/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    networks:
+      - bip
+    depends_on:
+      - consul
+
+  grafana:
+    image:  bipdev/grafana
+    build:
+      context: ./local-dev/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - bip
+    depends_on:
+      - prometheus
+      
+  opa:
+    image: bipdev/openpolicyagent
+    build:
+      context: ./local-dev/openpolicyagent
+    ports:
+      - "8181:8181"
+    # WARNING: OPA is NOT running with an authorization policy configured. This
+    # means that clients can read and write policies in OPA. If you are
+    # deploying OPA in an insecure environment, be sure to configure
+    # authentication and authorization on the daemon. See the Security page for
+    # details: https://www.openpolicyagent.org/docs/security.html.
+    command:
+      - "run"
+      - "--server"
+      - "--log-level=debug"
+      - "--log-format=json"
+      - "api_authz_jwt_token.rego"
+    volumes:
+      - "./local-dev/openpolicyagent/policy/api_authz_jwt_token.rego:/api_authz_jwt_token.rego"
+    networks:
+      - bip
+
+  oracle:
+    image: oracle/database:18.4.0-xe
+    build: 
+      context: ./local-dev/oracle
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    networks:
+        - bip
+    environment:
+        - ORACLE_PWD=rQR2zcN5aMGdw
+    healthcheck:
+        test: ["CMD", "$ORACLE_BASE/$CHECK_DB_FILE", ">/dev/null || exit 1"]
+        interval: 1m
+networks:
+  bip:
+    driver: bridge

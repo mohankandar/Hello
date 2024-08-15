@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+>
+	<modelVersion>4.0.0</modelVersion>
+
+  <!-- FIPS Framework -->
+	<parent>
+		<groupId>gov.va.bip.framework</groupId>
+		<artifactId>bip-framework-parentpom</artifactId>
+		<version>7.6.0</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>gov.va.bip.reference.person</groupId>
+	<artifactId>bip-reference-reactor</artifactId>
+	<version>5.8.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>${project.artifactId}</name>
+	<description>Reactor POM for BIP Spring Boot Reference Service</description>
+
+	<modules>
+		<module>bip-reference-partner-person</module>
+		<module>bip-reference-person-db</module>
+		<module>bip-reference-person</module>
+		<module>bip-reference-inttest</module>
+		<module>bip-reference-perftest</module>
+	</modules>
+
+	<repositories>
+		<repository>
+			<id>nexus3</id>
+			<name>BIP Nexus Repository</name>
+			<url>https://nexus.dev.bip.va.gov/repository/maven-public</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<bip-framework.version>7.6.0</bip-framework.version>
+		<!-- intentionally using old ant-contrib because newer version doesn't work with maven-antrun-plugin -->
+		<ant-contrib.version>20020829</ant-contrib.version>
+		<!-- the maven phase to bind fortify-sca -->
+		<fortify.bind.phase>initialize</fortify.bind.phase>
+		<fortify-merge-input-filepath>${project.basedir}/${project.artifactId}.fpr</fortify-merge-input-filepath>
+		<fortify-merge-output-filepath>${project.basedir}/${project.artifactId}.fpr</fortify-merge-output-filepath>
+        <java.version>17</java.version>
+        <sonar.java.source>${java.version}</sonar.java.source>
+		<!-- Examples demonstrating how to implement Sonar exclusions -->
+		<sonar.issue.ignore.multicriteria>e2</sonar.issue.ignore.multicriteria>
+		<sonar.issue.ignore.multicriteria.e2.ruleKey>java:S5785</sonar.issue.ignore.multicriteria.e2.ruleKey>
+		<sonar.issue.ignore.multicriteria.e2.resourceKey>
+			**/*.java
+		</sonar.issue.ignore.multicriteria.e2.resourceKey>
+		<sonar.issue.ignore.multicriteria>e1</sonar.issue.ignore.multicriteria>
+		<sonar.issue.ignore.multicriteria.e1.ruleKey>java:S6212</sonar.issue.ignore.multicriteria.e1.ruleKey>
+		<sonar.issue.ignore.multicriteria.e1.resourceKey>
+			**/*.java
+		</sonar.issue.ignore.multicriteria.e1.resourceKey>
+	</properties>
+
+	<dependencies>
+		<!--
+			DATABASE related dependencies, configured in app yaml.
+			Available managed dependencies from bip-framework-parentpom/pom.xml:
+			com.h2database:h2:${h2.version}
+			org.postgresql:postgresql:${postgresql.version}
+			com.oracle:ojdbc6:${ojdbc6.version}
+			com.oracle:ojdbc7:${ojdbc7.version}
+			com.oracle:ojdbc8:${ojdbc8.version}
+			com.oracle:ojdbc10:${ojdbc8.version}
+			org.liquibase:liquibase-core:${liquibase-core.version}
+			org.liquibase.ext:liquibase-hibernate5:${liquibase-hibernate5.version}
+		-->
+		<!-- postgresql: currently backward compatible to PostgreSQL 8.2 -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.checkerframework</groupId> <!-- Exclude checkerframework due to conflict with io.confluent:kafka-schema-registry-client -->
+					<artifactId>checker-qual</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+ 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>dependency-check</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.owasp</groupId>
+						<artifactId>dependency-check-maven</artifactId>
+						<version>6.5.0</version>
+						<configuration>
+							<formats>HTML,XML</formats>
+							<!--<mavenSettingsProxyId>httpsproxy</mavenSettingsProxyId>-->
+							<suppressionFile>./owasp-suppression.xml</suppressionFile>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+				<resources>
+					<resource>
+						<directory>${project.basedir}/target/classes</directory>
+						<includes>
+							<include>mykeystore.pfx</include>
+						</includes>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<!--
+			The fortify-sca profile runs the aggregate scan for all modules.
+			If a project team believes that the fortify-sca profile requires ANY changes,
+			please consult with the BIP Framework development team.
+			Base Fortify requirements for all project modules are declared in bip-framework-parentpom.
+		-->
+		<profile>
+			<id>fortify-sca</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<!-- Don't run tests from SCA - profile should be run as: "mvn install -Pfortify-sca" -->
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+				<skipPerfTests>true</skipPerfTests>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.fortify.sca.plugins.maven</groupId>
+						<artifactId>sca-maven-plugin</artifactId>
+						<version>${sca-maven-plugin.version}</version>
+                        <configuration>
+                            <source>${java.version}</source>
+                        </configuration>
+						<executions>
+							<execution>
+								<id>fortify-sca-clean</id>
+								<phase>${fortify.bind.phase}</phase>
+								<goals>
+									<goal>clean</goal>
+								</goals>
+								<configuration>
+									<aggregate>true</aggregate>
+								</configuration>
+							</execution>
+							<execution>
+								<id>fortify-sca-translate</id>
+								<phase>${fortify.bind.phase}</phase>
+								<goals>
+									<goal>translate</goal>
+								</goals>
+								<configuration>
+									<!-- run scans against all reactor projects -->
+									<aggregate>true</aggregate>
+									<!-- exclude -inttest, -perftest and -db, as they don't go to prod -->
+									<excludes>${user.dir}/bip-reference-inttest,${user.dir}/bip-reference-perftest,${user.dir}/bip-reference-person-db</excludes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>fortify-sca-scan</id>
+								<phase>${fortify.bind.phase}</phase>
+								<goals>
+									<goal>scan</goal>
+								</goals>
+								<configuration>
+									<!-- run scans against all reactor projects -->
+									<aggregate>true</aggregate>
+									<!-- exclude -inttest, -perftest and -db, as they don't go to prod -->
+									<excludes>${user.dir}/bip-reference-inttest,${user.dir}/bip-reference-perftest,${user.dir}/bip-reference-person-db</excludes>
+								</configuration>
+							</execution>
+							<execution>
+							    <id>fortify-sca-upload</id>
+							    <phase>${fortify.bind.phase}</phase>
+							    <goals>
+							        <goal>upload</goal>
+							    </goals>
+							    <configuration>
+							        <!-- uploads the FPR resulting from scans run against all reactor projects -->
+							        <fortifyclient>fortifyclient</fortifyclient>
+								<sscUrl>https://fortify.aide.oit.va.gov/ssc</sscUrl>
+								<sscUploadToken>5deb7634-4417-433c-a90f-b043b254fdad</sscUploadToken>
+								<sscApplicationName>bip-reference-person</sscApplicationName>
+								<sscApplicationVersion>development</sscApplicationVersion>
+								<aggregate>true</aggregate>
+							        <!-- exclude inttest and perftest, as they don't go to prod -->
+							        <excludes>${user.dir}/bip-bah-inttest,${user.dir}/bip-bah-perftest,${user.dir}/bip-bah-db</excludes>					
+							    </configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>fortify-merge</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<!-- Don't run tests from SCA - profile should be run as: "mvn install -Pfortify-merge" -->
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+				<skipPerfTests>true</skipPerfTests>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.8</version>
+						<!-- do not run on child modules, just on reactor -->
+						<inherited>false</inherited>
+						<dependencies>
+							<!-- provides ANT branch tags (if/then/else) -->
+							<dependency>
+								<groupId>ant-contrib</groupId>
+								<artifactId>ant-contrib</artifactId>
+								<version>${ant-contrib.version}</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>fortify-merge</id>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<tasks>
+										<!-- add the ant tasks from ant-contrib -->
+										<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+											<classpath refid="maven.dependency.classpath" />
+										</taskdef>
+										<echo>+++ Executing ANT target for Fortify copy/merge</echo>
+										<echo>+++ Checking file availability of ${fortify-merge-input-filepath}</echo>
+										<if>
+											<available file="${fortify-merge-input-filepath}" />
+											<then>
+												<echo>+++ Found file: ${fortify-merge-input-filepath}</echo>
+												<echo>+++ Executing Fortify merge operation with:</echo>
+												<echo> FPRUtility -merge</echo>
+												<echo> -project ${project.build.directory}/fortify/${project.artifactId}-${project.version}.fpr</echo>
+												<echo> -source ${fortify-merge-input-filepath}</echo>
+												<echo> -f ${fortify-merge-output-filepath}</echo>
+												<exec executable="FPRUtility">
+													<arg
+														line="-merge -project ${project.build.directory}/fortify/${project.artifactId}-${project.version}.fpr -source ${fortify-merge-input-filepath} -f ${fortify-merge-output-filepath}" />
+												</exec>
+											</then>
+											<else>
+												<echo>+++ Not-found file: ${fortify-merge-input-filepath}</echo>
+												<echo>+++ Executing file copy with:</echo>
+												<echo> copy</echo>
+												<echo> ${project.build.directory}/fortify/${project.artifactId}-${project.version}.fpr</echo>
+												<echo> ${fortify-merge-output-filepath}</echo>
+												<copy file="${project.build.directory}/fortify/${project.artifactId}-${project.version}.fpr"
+													tofile="${fortify-merge-output-filepath}" />
+											</else>
+										</if>
+									</tasks>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

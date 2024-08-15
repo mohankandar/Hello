@@ -1,0 +1,19 @@
+pipeline {
+   agent any
+
+   stages {
+      stage('Call Remote Functional Test') {
+         steps {
+            script {
+                def handle = triggerRemoteJob(remoteJenkinsName: 'blue-dev', job: 'functional-test/development',
+                  parameters: 'funcTestUrl=http://bip-reference-person-dev.blue-dev:8080\ncucumberOpts=--tags @DEV --tags ~@amazonsns --tags ~@amazonsqs')
+
+                //Get information from the handle
+                def status = handle.getBuildStatus()
+                def buildUrl = handle.getBuildUrl()
+                echo buildUrl.toString() + " finished with " + status.toString()
+            }
+         }
+      }
+   }
+}

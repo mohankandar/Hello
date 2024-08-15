@@ -1,0 +1,24 @@
+
+multiEnvPromotionPipeline {
+
+	// These default variables are the lowest priority settings 
+	// if checkboxes are not used in the build with parameters step the below are used
+	devEnvTagsDefault = "dev,tst"
+	stageEnvTagsDefault = "pat,uat,ivv,pdt,demo"
+
+	// These can override the default checkboxes available 
+	// in the build with parameters step for this job
+	devEnvironmentOptions = "dev,tst,foo"
+	stageEnvironmentOptions = "pat,uat,ivv,pdt,demo,buzz"
+
+	// This source image default 
+	sourceImageDefault = "blue/bip-reference-person"
+
+	// Often the source tag will be different each time 
+	//sourceTagDefault = "1.0.0"
+
+	// Slack section
+	slackEnabled = false
+	slackChannel = "#blue-deployments"
+
+}

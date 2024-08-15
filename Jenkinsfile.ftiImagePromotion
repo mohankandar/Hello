@@ -1,0 +1,16 @@
+ftiImagePromotionPipeline {
+    sourceRepositoryDefault = "https://container-registry.dev.bip.va.gov"
+    sourceImageDefault = "blue/bip-reference-person"
+    sourceTagDefault = ""
+    sourceCredentialDefault = "docker-registry"
+
+    targetRepositoryDefault = "https://container-registry.alt8.bip.va.gov"
+    targetImageDefault = "blue/bip-reference-person"
+    targetTagDefault = "alt-"
+    targetCredentialDefault = "docker-registry"
+
+    gitConfigRepositoryDefault = "https://github.com/department-of-veterans-affairs/bip-reference-person-config"
+    gitConfigTargetBranchDefault = "development"
+    gitCredentialDefault = "github"
+    terraformModulePathDefault = "secure-enclave/dev-vpc/alt"
+}

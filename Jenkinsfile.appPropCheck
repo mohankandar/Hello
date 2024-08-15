@@ -1,0 +1,20 @@
+mavenApplicationPropertyCheckPipeline {
+    //map of project name -> url of /actuator/env for application property check
+    projects = [
+        'archetypetest': ['url': 'https://archetypetest-dev.dev.bip.va.gov/actuator/env', 'credentials': 'archetypetest-dev-actuator'],
+        'blue': ['url': 'https://blue.dev.bip.va.gov/actuator/env', 'credentials': 'blue-dev-actuator'],
+        'bffs': ['url': 'https://bffs-dev.dev.bip.va.gov/actuator/env'],
+        'benefits-services': ['url': 'https://benefits-services-dev.dev.bip.va.gov/actuator/env'],
+        'bpds': ['url': 'https://bpds-dev.dev.bip.va.gov/actuator/env'],
+        'bss': ['url': 'https://bss-dev.dev.bip.va.gov/actuator/env'],
+        'bteam': [:],
+        'cfapi': ['url': ''],
+        'claims': [credentials: '']
+    ]
+
+    //map of property names -> property values to verify in application property check
+    properties = [
+        'management.health.consul.enabled': 'false',
+        'management.health.vault.enabled': 'false'
+    ]
+}

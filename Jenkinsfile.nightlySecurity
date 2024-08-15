@@ -1,0 +1,77 @@
+nightlySecurityPipeline {
+
+    //TODO: Remove test skip once unit test errors are resolved
+    skipTests = false
+    javaVersion = 17
+
+    buildsToKeep = "5"
+
+   /*************************************************************************
+    * Docker Build Configuration
+    *************************************************************************/
+
+    // Map of Image Names to sub-directory in the repository. If this is value is non-empty, 
+    // the build pipeline will build all images specified in the map. The example below will build an image tagged as
+    // `blue/bip-reference-person:latest` using the Docker context of `./bip-reference-person`.
+    dockerBuilds = [
+        'blue/bip-reference-person': 'bip-reference-person'
+    ]
+    
+    branchToDeployEnvMap = [
+        'master': ['lower':['sbx']],
+        'development': ['lower':['dev']],
+        'release-2.0': ['lower':['test'],'upper':[[
+            'env':'uat',
+            'source_repository': 'https://container-registry.dev.bip.va.gov',
+            'target_repository': 'https://container-registry.stage8.bip.va.gov',
+            'source_credential': 'docker-registry',
+            'target_credential': 'staging-docker-registry'
+        ]]]
+    ]
+    
+    
+    /*************************************************************************
+     * OWASP Maven Dependency Check Configuration
+     *************************************************************************/
+ 
+    //Determines which plugin to use for OWASP Dependency Check. Valid values are "maven" and "jenkins".
+    owaspPlugin = "jenkins"
+
+    //Determines vulnerability threshold. If number of vulnerabilities of specified severity exceed this threshold, the pipeline build will be marked as unstable.
+    unstableTotalCritical = 1
+    unstableTotalHigh = 1
+    unstableTotalMedium = 1
+    unstableTotalLow = 1
+
+    /*************************************************************************
+     * Fortify Configuration
+     *************************************************************************/
+    //Specifies the maximum amount of memory Fortify Static Code Analyzer uses. Values can be M or G (ex. 1G).
+    fortifyMaxHeap = "1G"
+
+    //Specifies the thread stack size of JVM which runs SCA.
+    fortifyThreadSize = "8M"
+
+    //Enable to use the Fortify Jenkins plugin. Maven apps use the Fortify Maven plugin by default.
+    useFortifyJenkinsPlugin = true
+
+    //Build ID used for Fortify buildID and file name parameters
+    //fortifyBuildID = 'bip-reference-person'
+
+    //Enable to archive Fortify translate and scan log files
+    archiveFortifyLogs = false
+
+    //List of files to include in Fortify translate. Value must be in the following syntax: '"./**/*.java" "./**/*.xml"'
+    fortifyIncludeList = '"./**/*.java" "./**/*.xml" "./**/*.yml" "./**/*.yaml" "./**/*.xsd" "./**/*.wsdl"'
+
+    //List of files to exclude from Fortify translate. Value must be in the following syntax: '"./dir1" "./dir2"
+    fortifyExcludeList = '"./bip-reference-inttest" "./bip-reference-perftest" "./bip-reference-person-db" ' +
+            '"./bip-reference-partner-person/src/test" "./bip-reference-partner-person/target/classes" "./bip-reference-partner-person/target/javadoc-bundle-options" "./bip-reference-partner-person/target/test-classes" ' +
+            '"./bip-reference-person/src/test" "./bip-reference-person/target/classes" "./bip-reference-person/target/javadoc-bundle-options" "./bip-reference-person/target/test-classes" "./bip-reference-person/target/antrun" '
+
+    //List of properties to add to fortify-sca.properties file.
+    //fortifyScaProps = [
+    //        "com.fortify.sca.MultithreadedAnalysis = true",
+    //        "com.fortify.sca.ThreadCount = 2"
+    //]
+}

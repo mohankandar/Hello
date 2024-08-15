@@ -1,0 +1,22 @@
+owaspDependencyCheckPipeline {
+    //Determines which maven Jenkins agent to run.
+    useJDK11 = true
+
+    //Determines which plugin to use for OWASP Dependency Check. Valid values are "maven" and "jenkins".
+    owaspPlugin = "jenkins"
+
+    //Determines vulnerability threshold. If number of vulnerabilities of specified severity exceed this threshold, the pipeline build will be marked as unstable.
+    unstableTotalCritical = 1
+    unstableTotalHigh = 1
+    unstableTotalMedium = 1
+    unstableTotalLow = 1
+
+    //Determines vulnerability threshold. If number of vulnerabilities of specified severity exceed this threshold, the pipeline build will fail.
+    //failedTotalCritical = 1
+    //failedTotalHigh = 1
+    //failedTotalMedium = 1
+    //failedTotalLow = 1
+
+    //String for defining Dependency Check command line arguments. See Dependency-Check-CLI documentation (https://jeremylong.github.io/DependencyCheck/dependency-check-cli/arguments.html) for a table of supported command line arguments.
+    //owaspArgs = "--suppression ./owasp-suppression.xml"
+}

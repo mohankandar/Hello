@@ -1,0 +1,11 @@
+zeroTrustImagePromotionPipeline {
+    sourceRepositoryDefault = "https://container-registry.dev.bip.va.gov"
+    sourceImageDefault = "blue/bip-reference-person"
+    sourceTagDefault = ""
+    sourceCredentialDefault = "lower-env-docker-registry"
+
+    targetRepositoryDefault = "https://container-registry.stage.bip.va.gov"
+    targetImageDefault = "blue/bip-reference-person"
+    targetTagDefault = "ivv-"
+    targetCredentialDefault = "docker-registry"
+}

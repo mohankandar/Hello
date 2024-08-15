@@ -1,0 +1,33 @@
+site_name: "BRP techdocs"
+
+nav:
+  - Overview: index.md
+  - Onboarding:
+      - Getting Started: "quick-start-guide.md"
+      - Installation Help Guide: "installation-help-guide.md"
+  - Tech techdocs:
+      - Actuator Mgmt: "actuator-management.md"
+      - Versioning: "api-versioning-management.md"
+      - App Flow: "application-flow.md"
+      - App Security Mgmt: "application-security-management.md"
+      - Cert Mgmt: "application-ssl-certs-management.md"
+      - AWS Cheat Sheet: "aws-cli-cheat-sheet.md"
+      - AWS Services Config: "aws-services-configuration.md"
+      - AWS Services Overview: "aws-services-overview.md"
+      - BRP Endpoints: "brp-endpoints.md"
+      - Cache Mgmt: "cache-management.md"
+      - Config Mgmt: "config-management.md"
+      - Cucumber: "cucumber-test-configuration-on-new-clusters.md"
+      - Database: "database-config-usage.md"
+      - Design Layer Separation: "design-layer-separation.md"
+      - Developing with Framework: "developing-with-bip-framework.md"
+      - Exception Handling: "exception-handling.md"
+      - Fortify: "fortify-and-swa.md"
+      - Hystrix: "hystrix-management.md"
+      - BRP Endpoints: "brp-endpoints.md"
+      - Cache Mgmt: "cache-management.md"
+      - Config Mgmt: "config-management.md"
+  - Release Notes: "https://github.com/department-of-veterans-affairs/bip-reference-person/releases"
+
+plugins:
+  - techdocs-core

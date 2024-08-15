@@ -1,0 +1,21 @@
+mavenFunctionalTestPipeline {
+    //Directory that contains the cucumber reports
+    cucumberReportDirectory = "bip-reference-inttest/target/site"
+
+    //Additional Mavn options to use when running functional test cases
+    cucumberOpts = "@DEV and not @vefsdocdownload"
+
+    javaVersion = 17
+
+    /* Postman Testing Configuration */
+
+   //Set of Postman test collections to execute. Required for Postman Testing stage to run.
+   //Url of the service is passed to the collection as an environment variable named BASE_URL
+   postmanTestCollections = [
+     'bip-reference-inttest/src/inttest/resources/bip.postman_collection.json'
+   ]
+
+    funcTestUrl = 'http://bip-reference-person-dev.blue-dev:8080'
+
+    functionalPathsToCapture = 'bip-reference-inttest/target/site/cucumber.json'
+}

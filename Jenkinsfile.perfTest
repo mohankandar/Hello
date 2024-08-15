@@ -1,0 +1,6 @@
+mavenPerformancePipeline {
+    perfTestUrl = 'https://blue.dev.bip.va.gov'
+    perfOpts = '-DjMeterTestFile=ReferencePersonServicePerformanceTestPlan.jmx'
+    javaVersion = 17
+    performanceModuleDirectory = "bip-reference-perftest"
+}

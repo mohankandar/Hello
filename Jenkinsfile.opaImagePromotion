@@ -1,0 +1,11 @@
+imagePromotionPipeline {
+    sourceRepositoryDefault = "https://container-registry.stage8.bip.va.gov"
+    sourceImageDefault = "openpolicyagent/opa"
+    sourceTagDefault = "0.16.0"
+    sourceCredentialDefault = "docker-registry"
+
+    targetRepositoryDefault = "https://container-registry.dev.bip.va.gov"
+    targetImageDefault = "openpolicyagent/opa"
+    targetTagDefault = "0.16.0"
+    targetCredentialDefault = "lower-env-docker-registry"
+}

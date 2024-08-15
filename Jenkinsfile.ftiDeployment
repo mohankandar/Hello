@@ -1,0 +1,33 @@
+ftiDeploymentPipeline {
+
+    skipSecureEnclaveDeployment = false
+
+    helmTimeout = 500
+    skipUndeploy = false
+
+    useJDK11 = true
+
+    /*************************************************************************
+     * Docker Build Configuration
+     *************************************************************************/
+
+    // Map of Image Names to sub-directory in the repository. If this is value is non-empty,
+    // the build pipeline will build all images specified in the map. The example below will build an image tagged as
+    // `blue/bip-reference-person:latest` using the Docker context of `./bip-reference-person`.
+    dockerBuilds = [
+            'blue/bip-reference-person': 'bip-reference-person'
+    ]
+
+    applicationName = "bip-reference-person"
+    
+    // Map of branch name to environment name.
+    branchToDeployEnvMap = [
+            'alt': ['lower':['alt']],
+            'development' : ['lower':['dev']]
+    ]
+    // Map of environment name to cluster name.
+    envToClusterMap = [
+            'dev': 'DVPC-cluster',
+            'alt': 'ALT-cluster'
+    ]
+}
